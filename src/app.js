@@ -4,6 +4,8 @@ const path = require("path");
 const hbs = require("hbs");
 const geocode = require("./utils/geocode");
 const forecast = require("./utils/forecast");
+const port = process.env.PORT || 3000;
+
 // defining paths
 const app = express();
 const viewsPath = path.join(__dirname, "../templates/views");
@@ -39,22 +41,25 @@ app.get("/weather", (req, res) => {
   if (!req.query.address) {
     return res.send("Please Provide an Address");
   }
-  geocode(req.query.address, (error, { latitude, longitude, location } = {}) => {
-    if (error) {
-      return res.send({ error });
-    }
-    forecast(latitude, longitude, (error, forecastData) => {
+  geocode(
+    req.query.address,
+    (error, { latitude, longitude, location } = {}) => {
       if (error) {
         return res.send({ error });
       }
-      res.send({
-        forecast: forecastData,
-        location: location,
-        error: error,
-        address: req.query.address,
+      forecast(latitude, longitude, (error, forecastData) => {
+        if (error) {
+          return res.send({ error });
+        }
+        res.send({
+          forecast: forecastData,
+          location: location,
+          error: error,
+          address: req.query.address,
+        });
       });
-    });
-  });
+    }
+  );
 });
 
 app.get("*", (req, res) => {
@@ -62,6 +67,6 @@ app.get("*", (req, res) => {
 });
 
 // to start server use listen
-app.listen(3000, () => {
-  console.log(chalk.green.bold("server has started on port 3000"));
+app.listen(port, () => {
+  console.log(chalk.green.bold("server has started on port :" + port));
 });
